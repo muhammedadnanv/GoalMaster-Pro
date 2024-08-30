@@ -5,16 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GoalMaster Pro</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;600&display=swap">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="https://i.postimg.cc/XYmTTnbc/web3-with-metamask-moded-png.png">
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #d5aef9, #c3b9ff);
+      color: #333;
+      font-family: 'Roboto', sans-serif;
+    }
+    h1, h3 {
+      font-family: 'Montserrat', sans-serif;
+      color: #444;
+    }
+    .btn-primary {
+      background-color: #ff6f61;
+      border-color: #ff6f61;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .btn-primary:hover {
+      background-color: #e55b5b;
+      border-color: #e55b5b;
+    }
+    .form-control:focus {
+      box-shadow: 0 0 0 0.2rem rgba(255, 111, 97, 0.25);
+      border-color: #ff6f61;
+    }
+    footer {
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      font-family: 'Roboto', sans-serif;
+    }
+    #goalForm {
+      border-radius: 15px;
+      padding: 30px;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    .list-group-item {
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+    .calendar-container {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-top: 20px;
+    }
+    .calendar-day {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+      border-radius: 8px;
+      background: white;
+    }
+    .calendar-header {
+      font-weight: 600;
+      color: #ff6f61;
+    }
+    .calendar-day {
+      font-size: 14px;
+      color: #333;
+    }
+    .icon-large {
+      font-size: 24px;
+    }
+  </style>
 </head>
 <body>
   <div class="container my-5">
-    <h1 class="text-center">GoalMaster Pro</h1>
-    <p class="text-center">Breakdown your annual goals into daily targets with ease. Ideal for marketing, sales, and turnover calculations.</p>
+    <h1 class="text-center mb-4">GoalMaster Pro</h1>
+    <p class="text-center mb-4">Breakdown your annual goals into daily targets with ease. Ideal for marketing, sales, and turnover calculations.</p>
     <div class="text-center mb-4">
-      <button id="connectWalletButton" class="btn btn-primary"><i class="fas fa-wallet"></i> Connect Wallet</button>
+      <button id="connectWalletButton" class="btn btn-primary">
+        <i class="fas fa-wallet icon-large"></i> Connect Wallet
+      </button>
       <div id="walletAddress" class="mt-2"></div>
     </div>
     <form id="goalForm">
@@ -30,7 +99,9 @@
         <label for="turnoverGoal">Annual Turnover Goal</label>
         <input type="number" class="form-control" id="turnoverGoal" placeholder="Enter turnover goal">
       </div>
-      <button type="button" class="btn btn-primary" onclick="calculateGoals()"><i class="fas fa-calculator"></i> Calculate Daily Goals</button>
+      <button type="button" class="btn btn-primary" onclick="calculateGoals()">
+        <i class="fas fa-calculator icon-large"></i> Calculate Daily Goals
+      </button>
     </form>
     <div class="mt-4">
       <h3>Daily Goals</h3>
@@ -40,11 +111,69 @@
         <li class="list-group-item"><strong>Turnover:</strong> <span id="dailyTurnoverGoal"></span></li>
       </ul>
     </div>
+    <div class="mt-4">
+      <h3>Calendar</h3>
+      <div id="calendar" class="calendar-container"></div>
+    </div>
   </div>
   <footer class="text-center mt-4 py-3">
     <p class="mb-0">Developed by <a href="https://adwebcomicagency.vercel.app/" target="_blank" rel="noopener noreferrer">AD Web Comic Agency</a></p>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1/web3.min.js"></script>
-  <script src="script.js"></script>
+  <script>
+    // Function to calculate and display daily goals
+    function calculateGoals() {
+      const marketingGoal = parseFloat(document.getElementById('marketingGoal').value) || 0;
+      const salesGoal = parseFloat(document.getElementById('salesGoal').value) || 0;
+      const turnoverGoal = parseFloat(document.getElementById('turnoverGoal').value) || 0;
+      
+      const daysInYear = 365;
+      const dailyMarketingGoal = (marketingGoal / daysInYear).toFixed(2);
+      const dailySalesGoal = (salesGoal / daysInYear).toFixed(2);
+      const dailyTurnoverGoal = (turnoverGoal / daysInYear).toFixed(2);
+      
+      document.getElementById('dailyMarketingGoal').innerText = dailyMarketingGoal;
+      document.getElementById('dailySalesGoal').innerText = dailySalesGoal;
+      document.getElementById('dailyTurnoverGoal').innerText = dailyTurnoverGoal;
+    }
+
+    // Function to generate the calendar for the current month
+    function generateCalendar(year, month) {
+      const container = document.getElementById('calendar');
+      container.innerHTML = '';
+
+      const date = new Date(year, month);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const firstDay = date.getDay();
+
+      // Header with day names
+      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      daysOfWeek.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'calendar-header';
+        header.innerText = day;
+        container.appendChild(header);
+      });
+
+      // Empty cells before the start of the month
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'calendar-day';
+        container.appendChild(emptyCell);
+      }
+
+      // Days of the month
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+        dayCell.innerText = i;
+        container.appendChild(dayCell);
+      }
+    }
+
+    // Initialize calendar for the current month
+    const now = new Date();
+    generateCalendar(now.getFullYear(), now.getMonth());
+  </script>
 </body>
 </html>
