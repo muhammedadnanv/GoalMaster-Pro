@@ -74,6 +74,11 @@
     .icon-large {
       font-size: 24px;
     }
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -89,15 +94,15 @@
     <form id="goalForm">
       <div class="form-group">
         <label for="marketingGoal">Annual Marketing Goal</label>
-        <input type="number" class="form-control" id="marketingGoal" placeholder="Enter marketing goal">
+        <input type="number" class="form-control" id="marketingGoal" placeholder="Enter marketing goal" required>
       </div>
       <div class="form-group">
         <label for="salesGoal">Annual Sales Goal</label>
-        <input type="number" class="form-control" id="salesGoal" placeholder="Enter sales goal">
+        <input type="number" class="form-control" id="salesGoal" placeholder="Enter sales goal" required>
       </div>
       <div class="form-group">
         <label for="turnoverGoal">Annual Turnover Goal</label>
-        <input type="number" class="form-control" id="turnoverGoal" placeholder="Enter turnover goal">
+        <input type="number" class="form-control" id="turnoverGoal" placeholder="Enter turnover goal" required>
       </div>
       <button type="button" class="btn btn-primary" onclick="calculateGoals()">
         <i class="fas fa-calculator icon-large"></i> Calculate Daily Goals
@@ -113,6 +118,11 @@
     </div>
     <div class="mt-4">
       <h3>Calendar</h3>
+      <div class="calendar-nav">
+        <button id="prevMonth" class="btn btn-secondary">Previous</button>
+        <div id="calendarHeader" class="text-center"></div>
+        <button id="nextMonth" class="btn btn-secondary">Next</button>
+      </div>
       <div id="calendar" class="calendar-container"></div>
     </div>
   </div>
@@ -140,40 +150,88 @@
     // Function to generate the calendar for the current month
     function generateCalendar(year, month) {
       const container = document.getElementById('calendar');
+      const header = document.getElementById('calendarHeader');
       container.innerHTML = '';
 
       const date = new Date(year, month);
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const firstDay = date.getDay();
 
-      // Header with day names
+      // Header
       const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       daysOfWeek.forEach(day => {
-        const header = document.createElement('div');
-        header.className = 'calendar-header';
-        header.innerText = day;
-        container.appendChild(header);
+        const headerCell = document.createElement('div');
+        headerCell.className = 'calendar-day calendar-header';
+        headerCell.innerText = day;
+        container.appendChild(headerCell);
       });
 
-      // Empty cells before the start of the month
+      // Blank spaces before the first day of the month
       for (let i = 0; i < firstDay; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'calendar-day';
-        container.appendChild(emptyCell);
+        const blank = document.createElement('div');
+        blank.className = 'calendar-day';
+        container.appendChild(blank);
       }
 
       // Days of the month
-      for (let i = 1; i <= daysInMonth; i++) {
-        const dayCell = document.createElement('div');
-        dayCell.className = 'calendar-day';
-        dayCell.innerText = i;
-        container.appendChild(dayCell);
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.innerText = day;
+        container.appendChild(dayElement);
       }
+
+      // Update header with month and year
+      header.innerText = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
     }
 
-    // Initialize calendar for the current month
-    const now = new Date();
-    generateCalendar(now.getFullYear(), now.getMonth());
+    // Initial setup
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    generateCalendar(currentYear, currentMonth);
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      if (currentMonth === 0) {
+        currentMonth = 11;
+        currentYear -= 1;
+      } else {
+        currentMonth -= 1;
+      }
+      generateCalendar(currentYear, currentMonth);
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      if (currentMonth === 11) {
+        currentMonth = 0;
+        currentYear += 1;
+      } else {
+        currentMonth += 1;
+      }
+      generateCalendar(currentYear, currentMonth);
+    });
+
+    // Wallet connection
+    window.addEventListener('load', async () => {
+      if (window.ethereum) {
+        window.web3 = new Web3(window.ethereum);
+        try {
+          await window.ethereum.request({ method: 'eth_requestAccounts' });
+          const accounts = await web3.eth.getAccounts();
+          document.getElementById('walletAddress').innerText = `Connected: ${accounts[0]}`;
+        } catch (error) {
+          console.error('User denied account access', error);
+        }
+      } else {
+        document.getElementById('walletAddress').innerText = 'MetaMask not detected';
+      }
+    });
   </script>
+ <script src="donation-widget (1).js" defer></script>
+  <script>
+    // Initialize the donation widget
+    window.addEventListener('load', function() {
+        createDonationWidget('adnanmuhammad4393@okicici', 150, 'Supporting GoalMaster Pro');
+    });
+</script>
 </body>
 </html>
