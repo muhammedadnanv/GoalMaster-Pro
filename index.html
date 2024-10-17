@@ -1,237 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoalMaster Pro</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;600&display=swap">
-  <link rel="stylesheet" href="styles.css">
-  <link rel="icon" href="https://i.postimg.cc/XYmTTnbc/web3-with-metamask-moded-png.png">
-  <style>
-    body {
-      background: linear-gradient(to bottom right, #d5aef9, #c3b9ff);
-      color: #333;
-      font-family: 'Roboto', sans-serif;
-    }
-    h1, h3 {
-      font-family: 'Montserrat', sans-serif;
-      color: #444;
-    }
-    .btn-primary {
-      background-color: #ff6f61;
-      border-color: #ff6f61;
-      font-family: 'Montserrat', sans-serif;
-    }
-    .btn-primary:hover {
-      background-color: #e55b5b;
-      border-color: #e55b5b;
-    }
-    .form-control:focus {
-      box-shadow: 0 0 0 0.2rem rgba(255, 111, 97, 0.25);
-      border-color: #ff6f61;
-    }
-    footer {
-      background: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      font-family: 'Roboto', sans-serif;
-    }
-    #goalForm {
-      border-radius: 15px;
-      padding: 30px;
-      background: white;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-    .list-group-item {
-      border: none;
-      border-radius: 8px;
-      margin-bottom: 15px;
-      background: rgba(255, 255, 255, 0.9);
-    }
-    .calendar-container {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      margin-top: 20px;
-    }
-    .calendar-day {
-      border: 1px solid #ddd;
-      padding: 10px;
-      text-align: center;
-      border-radius: 8px;
-      background: white;
-    }
-    .calendar-header {
-      font-weight: 600;
-      color: #ff6f61;
-    }
-    .calendar-day {
-      font-size: 14px;
-      color: #333;
-    }
-    .icon-large {
-      font-size: 24px;
-    }
-    .calendar-nav {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container my-5">
-    <h1 class="text-center mb-4">GoalMaster Pro</h1>
-    <p class="text-center mb-4">Breakdown your annual goals into daily targets with ease. Ideal for marketing, sales, and turnover calculations.</p>
-    <div class="text-center mb-4">
-      <button id="connectWalletButton" class="btn btn-primary">
-        <i class="fas fa-wallet icon-large"></i> Connect Wallet
-      </button>
-      <div id="walletAddress" class="mt-2"></div>
-    </div>
-    <form id="goalForm">
-      <div class="form-group">
-        <label for="marketingGoal">Annual Marketing Goal</label>
-        <input type="number" class="form-control" id="marketingGoal" placeholder="Enter marketing goal" required>
-      </div>
-      <div class="form-group">
-        <label for="salesGoal">Annual Sales Goal</label>
-        <input type="number" class="form-control" id="salesGoal" placeholder="Enter sales goal" required>
-      </div>
-      <div class="form-group">
-        <label for="turnoverGoal">Annual Turnover Goal</label>
-        <input type="number" class="form-control" id="turnoverGoal" placeholder="Enter turnover goal" required>
-      </div>
-      <button type="button" class="btn btn-primary" onclick="calculateGoals()">
-        <i class="fas fa-calculator icon-large"></i> Calculate Daily Goals
-      </button>
-    </form>
-    <div class="mt-4">
-      <h3>Daily Goals</h3>
-      <ul id="dailyGoalsList" class="list-group">
-        <li class="list-group-item"><strong>Marketing:</strong> <span id="dailyMarketingGoal"></span></li>
-        <li class="list-group-item"><strong>Sales:</strong> <span id="dailySalesGoal"></span></li>
-        <li class="list-group-item"><strong>Turnover:</strong> <span id="dailyTurnoverGoal"></span></li>
-      </ul>
-    </div>
-    <div class="mt-4">
-      <h3>Calendar</h3>
-      <div class="calendar-nav">
-        <button id="prevMonth" class="btn btn-secondary">Previous</button>
-        <div id="calendarHeader" class="text-center"></div>
-        <button id="nextMonth" class="btn btn-secondary">Next</button>
-      </div>
-      <div id="calendar" class="calendar-container"></div>
-    </div>
-  </div>
-  <footer class="text-center mt-4 py-3">
-    <p class="mb-0">Developed by <a href="https://adwebcomicagency.vercel.app/" target="_blank" rel="noopener noreferrer">AD Web Comic Agency</a></p>
-  </footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1/web3.min.js"></script>
-  <script>
-    // Function to calculate and display daily goals
-    function calculateGoals() {
-      const marketingGoal = parseFloat(document.getElementById('marketingGoal').value) || 0;
-      const salesGoal = parseFloat(document.getElementById('salesGoal').value) || 0;
-      const turnoverGoal = parseFloat(document.getElementById('turnoverGoal').value) || 0;
-      
-      const daysInYear = 365;
-      const dailyMarketingGoal = (marketingGoal / daysInYear).toFixed(2);
-      const dailySalesGoal = (salesGoal / daysInYear).toFixed(2);
-      const dailyTurnoverGoal = (turnoverGoal / daysInYear).toFixed(2);
-      
-      document.getElementById('dailyMarketingGoal').innerText = dailyMarketingGoal;
-      document.getElementById('dailySalesGoal').innerText = dailySalesGoal;
-      document.getElementById('dailyTurnoverGoal').innerText = dailyTurnoverGoal;
-    }
-
-    // Function to generate the calendar for the current month
-    function generateCalendar(year, month) {
-      const container = document.getElementById('calendar');
-      const header = document.getElementById('calendarHeader');
-      container.innerHTML = '';
-
-      const date = new Date(year, month);
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const firstDay = date.getDay();
-
-      // Header
-      const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      daysOfWeek.forEach(day => {
-        const headerCell = document.createElement('div');
-        headerCell.className = 'calendar-day calendar-header';
-        headerCell.innerText = day;
-        container.appendChild(headerCell);
-      });
-
-      // Blank spaces before the first day of the month
-      for (let i = 0; i < firstDay; i++) {
-        const blank = document.createElement('div');
-        blank.className = 'calendar-day';
-        container.appendChild(blank);
-      }
-
-      // Days of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.innerText = day;
-        container.appendChild(dayElement);
-      }
-
-      // Update header with month and year
-      header.innerText = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
-    }
-
-    // Initial setup
-    let currentYear = new Date().getFullYear();
-    let currentMonth = new Date().getMonth();
-    generateCalendar(currentYear, currentMonth);
-
-    document.getElementById('prevMonth').addEventListener('click', () => {
-      if (currentMonth === 0) {
-        currentMonth = 11;
-        currentYear -= 1;
-      } else {
-        currentMonth -= 1;
-      }
-      generateCalendar(currentYear, currentMonth);
-    });
-
-    document.getElementById('nextMonth').addEventListener('click', () => {
-      if (currentMonth === 11) {
-        currentMonth = 0;
-        currentYear += 1;
-      } else {
-        currentMonth += 1;
-      }
-      generateCalendar(currentYear, currentMonth);
-    });
-
-    // Wallet connection
-    window.addEventListener('load', async () => {
-      if (window.ethereum) {
-        window.web3 = new Web3(window.ethereum);
-        try {
-          await window.ethereum.request({ method: 'eth_requestAccounts' });
-          const accounts = await web3.eth.getAccounts();
-          document.getElementById('walletAddress').innerText = `Connected: ${accounts[0]}`;
-        } catch (error) {
-          console.error('User denied account access', error);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoalMaster Pro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@400;600&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="https://i.postimg.cc/XYmTTnbc/web3-with-metamask-moded-png.png">
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #d5aef9, #c3b9ff);
+            color: #333;
+            font-family: 'Roboto', sans-serif;
         }
-      } else {
-        document.getElementById('walletAddress').innerText = 'MetaMask not detected';
-      }
-    });
-  </script>
- <script src="donation-widget (1).js" defer></script>
-  <script>
-    // Initialize the donation widget
-    window.addEventListener('load', function() {
-        createDonationWidget('adnanmuhammad4393@okicici', 150, 'Supporting GoalMaster Pro');
-    });
-</script>
+
+        h1,
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: #444;
+        }
+
+        .btn-primary {
+            background-color: #ff6f61;
+            border-color: #ff6f61;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .btn-primary:hover {
+            background-color: #e55b5b;
+            border-color: #e55b5b;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 111, 97, 0.25);
+            border-color: #ff6f61;
+        }
+
+        footer {
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #goalForm {
+            border-radius: 15px;
+            padding: 30px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .list-group-item {
+            border: none;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .calendar-header {
+            font-weight: 600;
+            color: #ff6f61;
+        }
+
+        .calendar-day {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .icon-large {
+            font-size: 24px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            height: 20px;
+        }
+
+        .reminder-list {
+            margin-top: 20px;
+        }
+
+        .modal-header,
+        .modal-footer {
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container my-5">
+        <h1 class="text-center mb-4">GoalMaster Pro</h1>
+        <p class="text-center mb-4">Break down your annual goals into daily targets with ease. Ideal for marketing, sales, and turnover calculations.</p>
+        <div class="text-center mb-4">
+            <button id="connectWalletButton" class="btn btn-primary">
+                <i class="fas fa-wallet icon-large"></i> Connect Wallet
+            </button>
+            <div id="walletAddress" class="mt-2"></div>
+        </div>
+        <form id="goalForm">
+            <div class="form-group">
+                <label for="goalCategory">Goal Category</label>
+                <select class="form-control" id="goalCategory" required>
+                    <option value="">Select category</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Turnover">Turnover</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="annualGoal">Annual Goal</label>
+                <input type="number" class="form-control" id="annualGoal" placeholder="Enter annual goal" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="calculateGoals()">
+                <i class="fas fa-calculator icon-large"></i> Calculate Daily Goals
+            </button>
+        </form>
+
+        <div class="mt-4">
+            <h3>Daily Goals</h3>
+            <div class="progress" id="progressBarContainer">
+                <div class="progress-bar progress-bar-striped bg-success" id="progressBar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+            </div>
+            <ul id="dailyGoalsList" class="list-group">
+                <li class="list-group-item"><strong>Daily Goal:</strong> <span id="dailyGoal"></span></li>
+            </ul>
+        </div>
+
+        <div class="mt-4 reminder-list">
+            <h3>Set Reminder</h3>
+            <div class="form-group">
+                <label for="reminderTime">Reminder Time (HH:MM)</label>
+                <input type="time" class="form-control" id="reminderTime" required>
+                <button type="button" class="btn btn-primary mt-2" onclick="setReminder()">
+                    <i class="fas fa-bell icon-large"></i> Set Reminder
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h3>Goal History</h3>
+            <ul id="goalHistoryList" class="list-group"></ul>
+        </div>
+
+        <div class="mt-4">
+            <h3>Export Goals</h3>
+            <button id="exportGoalsButton" class="btn btn-primary" onclick="exportGoals()">
+                <i class="fas fa-file-export icon-large"></i> Export Goals
+            </button>
+        </div>
+
+        <div class="mt-4">
+            <h3>Calendar</h3>
+            <div class="calendar-nav">
+                <button id="prevMonth" class="btn btn-secondary">Previous</button>
+                <div id="calendarHeader" class="text-center"></div>
+                <button id="nextMonth" class="btn btn-secondary">Next</button>
+            </div>
+            <div id="calendar" class="calendar-container"></div>
+        </div>
+    </div>
+
+    <footer class="text-center mt-4 py-3">
+        <p class="mb-0">Developed by <a href="https://adwebcomicagency.vercel.app/" target="_blank" rel="noopener noreferrer">AD Web Comic Agency</a></p>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="login()">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.6.1/web3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let dailyGoal;
+        let goalHistory = [];
+        let reminderTime = null;
+
+        function calculateGoals() {
+            const annualGoal = document.getElementById('annualGoal').value;
+            dailyGoal = annualGoal / 365; // Assuming 365 days
+            document.getElementById('dailyGoal').innerText = dailyGoal.toFixed(2);
+            updateProgressBar();
+            saveGoalToHistory(dailyGoal);
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            const percentage = (dailyGoal / (dailyGoal * 365)) * 100;
+            progressBar.style.width = percentage + '%';
+            progressBar.innerText = Math.round(percentage) + '%';
+        }
+
+        function setReminder() {
+            reminderTime = document.getElementById('reminderTime').value;
+            alert(`Reminder set for ${reminderTime}`);
+        }
+
+        function saveGoalToHistory(goal) {
+            goalHistory.push(goal);
+            const goalHistoryList = document.getElementById('goalHistoryList');
+            const li = document.createElement('li');
+            li.className = 'list-group-item';
+            li.innerText = `Daily Goal: ${goal.toFixed(2)}`;
+            goalHistoryList.appendChild(li);
+        }
+
+        function exportGoals() {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            goalHistory.forEach((goal) => {
+                csvContent += `Daily Goal: ${goal.toFixed(2)}\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'goals.csv');
+            document.body.appendChild(link);
+            link.click();
+        }
+
+        function loadCalendar() {
+            const calendar = document.getElementById('calendar');
+            const date = new Date();
+            const month = date.getMonth();
+            const year = date.getFullYear();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const calendarHeader = document.getElementById('calendarHeader');
+            calendarHeader.innerText = `${date.toLocaleString('default', { month: 'long' })} ${year}`;
+            calendar.innerHTML = '';
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.innerText = i;
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCalendar);
+
+        // Wallet Connection (dummy implementation)
+        document.getElementById('connectWalletButton').addEventListener('click', async () => {
+            if (typeof window.ethereum !== 'undefined') {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                document.getElementById('walletAddress').innerText = `Connected: ${accounts[0]}`;
+            } else {
+                alert('Please install MetaMask!');
+            }
+        });
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            // Dummy authentication logic
+            if (username === "admin" && password === "password") {
+                alert("Login successful!");
+                $('#loginModal').modal('hide');
+            } else {
+                alert("Invalid username or password.");
+            }
+        }
+    </script>
 </body>
+
 </html>
